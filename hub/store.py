@@ -49,6 +49,7 @@ def _default_game_ach() -> dict:
 
 def default_guild() -> dict:
     return {
+        "remoteRev": 0,             # Workerから最後に取り込んだ設定の版
         "panels": {key: _default_panel() for key in GAMES},
         "achievements": {
             "enabled": True,
@@ -71,6 +72,69 @@ def _merge(base: dict, saved: dict) -> dict:
         elif key in out:
             out[key] = value
     return out
+
+
+def _apply_patch(cur: dict, patch: dict) -> None:
+    """管理画面/Workerからの部分更新を検証して cur に適用する。不正なら HubError(途中まで書かない)。"""
+    if not isinstance(patch, dict):
+        raise HubError(400, "INVALID_BODY", "JSON objectが必要です")
+    panels = patch.get("panels")
+    if panels is not None:
+        if not isinstance(panels, dict):
+            raise HubError(400, "INVALID_PANELS")
+        for game, p in panels.items():
+            if game not in GAMES:
+                continue
+            if not isinstance(p, dict):
+                raise HubError(400, "INVALID_PANELS")
+            if "channelId" in p:
+                cid = p["channelId"]
+                if cid is not None and not valid_snowflake(cid):
+                    raise HubError(400, "INVALID_CHANNEL", "チャンネルIDの形式が不正です")
+                cur["panels"][game]["channelId"] = cid
+            if "color" in p:
+                col = p["color"]
+                if col is not None and not valid_color(col):
+                    raise HubError(400, "INVALID_COLOR", "色は0〜16777215の整数です")
+                cur["panels"][game]["color"] = col
+
+    ach = patch.get("achievements")
+    if ach is not None:
+        if not isinstance(ach, dict):
+            raise HubError(400, "INVALID_ACHIEVEMENTS")
+        a = cur["achievements"]
+        for flag in ("enabled", "showAmount", "showUser"):
+            if flag in ach:
+                if not isinstance(ach[flag], bool):
+                    raise HubError(400, "INVALID_ACHIEVEMENTS", f"{flag}はtrue/falseです")
+                a[flag] = ach[flag]
+        if "channelId" in ach:
+            cid = ach["channelId"]
+            if cid is not None and not valid_snowflake(cid):
+                raise HubError(400, "INVALID_CHANNEL", "実績チャンネルIDの形式が不正です")
+            a["channelId"] = cid
+        if "color" in ach:
+            if not valid_color(ach["color"]):
+                raise HubError(400, "INVALID_COLOR", "色は0〜16777215の整数です")
+            a["color"] = ach["color"]
+        games = ach.get("games")
+        if games is not None:
+            if not isinstance(games, dict):
+                raise HubError(400, "INVALID_ACHIEVEMENTS")
+            for game, g in games.items():
+                if game not in GAMES:
+                    continue
+                if not isinstance(g, dict):
+                    raise HubError(400, "INVALID_ACHIEVEMENTS")
+                if "enabled" in g:
+                    if not isinstance(g["enabled"], bool):
+                        raise HubError(400, "INVALID_ACHIEVEMENTS")
+                    a["games"][game]["enabled"] = g["enabled"]
+                if "channelId" in g:
+                    cid = g["channelId"]
+                    if cid is not None and not valid_snowflake(cid):
+                        raise HubError(400, "INVALID_CHANNEL")
+                    a["games"][game]["channelId"] = cid
 
 
 class HubStore:
@@ -116,70 +180,29 @@ class HubStore:
             return copy.deepcopy(cur)
 
     def patch_config(self, guild_id: str, patch: dict) -> dict:
-        """管理画面からの部分更新。未知キーは無視、型が違えば HubError。"""
-        if not isinstance(patch, dict):
-            raise HubError(400, "INVALID_BODY", "JSON objectが必要です")
+        return self._update(guild_id, lambda cur: _apply_patch(cur, patch))
+
+    def apply_remote(self, guild_id: str, config: dict, rev: int) -> dict:
+        """Xaccount-Bot(Worker)に保存された設定を取り込む。設置済みメッセージや実績件数は触らない。"""
+        if not isinstance(config, dict) or isinstance(rev, bool) or not isinstance(rev, int):
+            raise HubError(400, "INVALID_BODY")
+        patch = {
+            "panels": {
+                game: {"channelId": (config.get("panels", {}).get(game) or {}).get("channelId"),
+                       "color": (config.get("panels", {}).get(game) or {}).get("color")}
+                for game in GAMES
+            },
+            "achievements": {k: v for k, v in (config.get("achievements") or {}).items() if k != "counters"},
+        }
 
         def apply(cur: dict) -> None:
-            panels = patch.get("panels")
-            if panels is not None:
-                if not isinstance(panels, dict):
-                    raise HubError(400, "INVALID_PANELS")
-                for game, p in panels.items():
-                    if game not in GAMES:
-                        continue
-                    if not isinstance(p, dict):
-                        raise HubError(400, "INVALID_PANELS")
-                    if "channelId" in p:
-                        cid = p["channelId"]
-                        if cid is not None and not valid_snowflake(cid):
-                            raise HubError(400, "INVALID_CHANNEL", "チャンネルIDの形式が不正です")
-                        cur["panels"][game]["channelId"] = cid
-                    if "color" in p:
-                        col = p["color"]
-                        if col is not None and not valid_color(col):
-                            raise HubError(400, "INVALID_COLOR", "色は0〜16777215の整数です")
-                        cur["panels"][game]["color"] = col
-
-            ach = patch.get("achievements")
-            if ach is not None:
-                if not isinstance(ach, dict):
-                    raise HubError(400, "INVALID_ACHIEVEMENTS")
-                a = cur["achievements"]
-                for flag in ("enabled", "showAmount", "showUser"):
-                    if flag in ach:
-                        if not isinstance(ach[flag], bool):
-                            raise HubError(400, "INVALID_ACHIEVEMENTS", f"{flag}はtrue/falseです")
-                        a[flag] = ach[flag]
-                if "channelId" in ach:
-                    cid = ach["channelId"]
-                    if cid is not None and not valid_snowflake(cid):
-                        raise HubError(400, "INVALID_CHANNEL", "実績チャンネルIDの形式が不正です")
-                    a["channelId"] = cid
-                if "color" in ach:
-                    if not valid_color(ach["color"]):
-                        raise HubError(400, "INVALID_COLOR", "色は0〜16777215の整数です")
-                    a["color"] = ach["color"]
-                games = ach.get("games")
-                if games is not None:
-                    if not isinstance(games, dict):
-                        raise HubError(400, "INVALID_ACHIEVEMENTS")
-                    for game, g in games.items():
-                        if game not in GAMES:
-                            continue
-                        if not isinstance(g, dict):
-                            raise HubError(400, "INVALID_ACHIEVEMENTS")
-                        if "enabled" in g:
-                            if not isinstance(g["enabled"], bool):
-                                raise HubError(400, "INVALID_ACHIEVEMENTS")
-                            a["games"][game]["enabled"] = g["enabled"]
-                        if "channelId" in g:
-                            cid = g["channelId"]
-                            if cid is not None and not valid_snowflake(cid):
-                                raise HubError(400, "INVALID_CHANNEL")
-                            a["games"][game]["channelId"] = cid
+            _apply_patch(cur, patch)
+            cur["remoteRev"] = rev
 
         return self._update(guild_id, apply)
+
+    def remote_revs(self, guild_ids: list[str]) -> dict[str, int]:
+        return {gid: int(self.guild(gid).get("remoteRev") or 0) for gid in guild_ids}
 
     def mark_deployed(self, guild_id: str, game: str, *, channel_id: str, message_id: str,
                       color: int | None) -> dict:

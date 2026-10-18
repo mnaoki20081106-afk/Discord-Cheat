@@ -1,4 +1,5 @@
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -23,21 +24,19 @@ GAMES: dict[str, Game] = {
 
 DEFAULT_ACHIEVEMENT_COLOR = 5763719  # Discord-Shiire 購入完了ログと同じ緑
 
-BRIDGE_PREFIX = "/bridge/main"
-BRIDGE_MAX_SKEW_MS = 5 * 60 * 1000
-BRIDGE_NONCE_TTL_S = 10 * 60
+POLL_SECONDS = 10           # Xaccount-Botへの問い合わせ間隔
+FULL_REPORT_SECONDS = 300   # 変化が無くても状態を報告し直す間隔
+MAX_GUILDS_PER_REQUEST = 50
 
 
 def bridge_secret() -> str:
     return (os.getenv("CHEAT_BRIDGE_SECRET") or "").strip()
 
 
-def bridge_host() -> str:
-    return (os.getenv("CHEAT_API_HOST") or "127.0.0.1").strip()
-
-
-def bridge_port() -> int:
-    try:
-        return int(os.getenv("CHEAT_API_PORT") or "8790")
-    except ValueError:
-        return 8790
+def xaccount_url() -> str:
+    """Xaccount-Bot Worker の HTTPS origin(例: https://xaccount-bot.<subdomain>.workers.dev)。
+    推測はしない。未設定/不正なら空文字(= 連携を起動しない)。"""
+    raw = (os.getenv("XACCOUNT_BOT_URL") or "").strip().rstrip("/")
+    if not re.fullmatch(r"https://[A-Za-z0-9.-]+(:\d+)?", raw):
+        return ""
+    return raw

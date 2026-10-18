@@ -6610,8 +6610,10 @@ SKIP_DEFAULT_SYNC = False   # True のときはハブ側が tree.sync を行う
 
 class YWPBot(commands.Bot):
     def __init__(self):
+        # メッセージ/メンバーのキャッシュは使っていないので持たない(省メモリ。少RAMのホストで効く)
         super().__init__(command_prefix='!ywp ', intents=discord.Intents.default(),
-                         help_command=None)
+                         help_command=None, max_messages=None,
+                         member_cache_flags=discord.MemberCacheFlags.none())
 
     async def setup_hook(self):
         # 再起動後もパネル/中止ボタンが動くように永続Viewを登録

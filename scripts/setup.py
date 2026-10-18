@@ -43,7 +43,7 @@ def main() -> None:
     print(f".env を作成/更新しました: {ENV}")
     print(f"\n{KEY}={value}\n")
     print("↑ Xaccount-Bot の Bot-Factory「Discord-Cheat連携 Secret」に同じ値を貼ってください。")
-    print("TOKEN / OWNER_ID は .env に自分で入れてください。")
+    print("TOKEN / OWNER_ID / XACCOUNT_BOT_URL は .env に自分で入れてください。")
 
 
 if __name__ == "__main__":
