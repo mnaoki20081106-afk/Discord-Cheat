@@ -1,0 +1,16 @@
+.env
+*.pyc
+__pycache__/
+data/hub.json
+data/hub.tmp
+data/nyanko/
+games/puni/config.json
+games/puni/proxy.txt
+games/puni/logs/
+games/puni/data/account_trust.json
+games/puni/data/*pending*.json
+games/puni/data/result_channels.json
+games/puni/data/paid_panels.json
+games/tsum/free_users.json
+games/tsum/result.json
+games/tsum/captcha.png
