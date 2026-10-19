@@ -40,7 +40,7 @@ MALLOC_ARENA_MAX=2 python main.py
 
 `MALLOC_ARENA_MAX=2` は省メモリ用(400MBクラスのホスト向け)。待機時は約100MB、ジョブ実行中は増えます。
 
-Bot-Factory からは VPS プロバイダ(`bot-factory.json` の `provider: "vps"`)で起動します。Oracle Cloud / Agames などのVPSを管理サイトの「VPS」タブに登録しておくと、SSHで `~/factory/discord-cheat` へ配置して systemd で常駐させます。環境変数(`TOKEN` / `OWNER_ID` / `XACCOUNT_BOT_URL` / `CHEAT_BRIDGE_SECRET` など)はFactoryのフォームに入力すると `.env` に書かれます。Factory を使わない場合は、`python main.py` を直接動かします。
+Bot-Factory からは VPS プロバイダ(`bot-factory.json` の `provider: "vps"`)で起動します。Oracle Cloud などのVPSを管理サイトの「VPS」タブに登録しておくと、SSHで `~/factory/discord-cheat` へ配置して systemd で常駐させます。環境変数(`TOKEN` / `OWNER_ID` / `XACCOUNT_BOT_URL` / `CHEAT_BRIDGE_SECRET` など)はFactoryのフォームに入力すると `.env` に書かれます。Factory を使わない場合は、`python main.py` を直接動かします。
 
 ### Developer Portal
 - Bot Token を発行(特権インテントは不要。`Intents.default()` で動作)
