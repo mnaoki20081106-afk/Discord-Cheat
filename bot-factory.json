@@ -6,7 +6,114 @@
   "entrypoint": "main.py",
   "setup": {
     "title": "Discord-Cheat",
-    "description": "にゃんこ大戦争 / ツムツム / ぷにぷにの代行を1つのBotで動かします。m-wsで起動します。外部からの接続は受けず、Xaccount-Botへ約10秒ごとに問い合わせに行きます。環境変数はm-wsのサイト側で設定してください: TOKEN / OWNER_ID / XACCOUNT_BOT_URL（Xaccount-BotのURL）/ CHEAT_BRIDGE_SECRET（Xaccount-Botの「Discord-Cheat連携 Secret」と同じ32文字以上の値）。省メモリのホストでは MALLOC_ARENA_MAX=2 も設定します。一覧は .env.example。",
-    "fields": []
+    "description": "にゃんこ大戦争 / ツムツム / ぷにぷにの代行を1つのBotで動かします。m-wsで起動し、入力した値はm-wsの .env として保存されます。このBotは外部からの接続を受けず、Xaccount-Botへ約10秒ごとに問い合わせに行きます。",
+    "fields": [
+      {
+        "key": "TOKEN",
+        "label": "BOT Token",
+        "type": "secret",
+        "required": true,
+        "pattern": "^[A-Za-z0-9_-]{15,}\\.[A-Za-z0-9_-]{4,}\\.[A-Za-z0-9_-]{20,}$",
+        "source": {
+          "title": "Botトークンの取得方法",
+          "steps": [
+            "Discord Developer PortalでDiscord-Cheat用Applicationを開く",
+            "左メニューのBotを開く",
+            "Token欄でReset TokenまたはCopyを押して値をコピーする"
+          ],
+          "url": "https://discord.com/developers/applications",
+          "link_label": "Discord Developer Portalを開く ↗"
+        }
+      },
+      {
+        "key": "OWNER_ID",
+        "label": "オーナーのDiscord ユーザーID",
+        "type": "text",
+        "required": true,
+        "pattern": "^\\d{17,20}$",
+        "placeholder": "自分のユーザーID（数字）",
+        "help": "Discordの開発者モードをONにして、自分のアイコンを右クリック → ユーザーIDをコピー。"
+      },
+      {
+        "key": "XACCOUNT_BOT_URL",
+        "label": "Xaccount-Bot URL",
+        "type": "url",
+        "required": true,
+        "pattern": "^https://[^\\s/]+/?$",
+        "placeholder": "https://<Xaccount-BotのWorker URL>",
+        "help": "Xaccount-Botの管理サイトの VITE_API_BASE_URL と同じ https:// のorigin（パスなし）。"
+      },
+      {
+        "key": "CHEAT_BRIDGE_SECRET",
+        "label": "Discord-Cheat連携 Secret",
+        "type": "secret",
+        "required": true,
+        "pattern": "^.{32,}$",
+        "placeholder": "Xaccount-Bot側と同じ32文字以上の値",
+        "help": "Xaccount-BotのBot-Factory欄「Discord-Cheat連携 Secret」と必ず同じ値にします。別リポジトリと共有する値のためFactory自動生成にはしません。"
+      },
+      {
+        "key": "SERVER_ID",
+        "label": "サーバーID（任意）",
+        "type": "text",
+        "required": false,
+        "pattern": "^\\d{17,20}$",
+        "help": "指定するとスラッシュコマンドがそのサーバーへ即時反映されます。空ならグローバル（反映に最大1時間）。"
+      },
+      {
+        "key": "LOG_CHANNEL_ID",
+        "label": "ログチャンネルID（任意）",
+        "type": "text",
+        "required": false,
+        "pattern": "^\\d{17,20}$",
+        "help": "ツムツムの内部ログ（管理者向け）の送信先。空なら送りません。"
+      }
+    ],
+    "discord": {
+      "intents": [],
+      "permissions": [
+        {
+          "id": "view-channels",
+          "label": "チャンネルを見る",
+          "required": true,
+          "description": "パネルの設置と更新に必要です。"
+        },
+        {
+          "id": "send-messages",
+          "label": "メッセージを送信",
+          "required": true,
+          "description": "パネルと実績の投稿に必要です。"
+        },
+        {
+          "id": "embed-links",
+          "label": "埋め込みリンク",
+          "required": true,
+          "description": "パネルと実績はEmbedで投稿します。"
+        },
+        {
+          "id": "read-message-history",
+          "label": "メッセージ履歴を読む",
+          "required": true,
+          "description": "既存パネルの更新に必要です。"
+        }
+      ],
+      "checks": [
+        {
+          "id": "invite-scopes",
+          "label": "招待スコープ bot + applications.commands で対象サーバーへ招待",
+          "required": true,
+          "description": "特権インテントは不要です（Intents.default() で動作）。",
+          "path": "Discord Developer Portal > OAuth2 > URL Generator",
+          "url": "https://discord.com/developers/applications"
+        }
+      ],
+      "notes": [
+        "m-wsで起動するため、Interactions Endpoint URLなどのWorker用設定は不要です。",
+        "入力した値はm-wsのBotの .env に書き込まれます。画面にトークンは再表示されません。"
+      ]
+    }
+  },
+  "mws_env": {
+    "MALLOC_ARENA_MAX": "2"
   }
 }
