@@ -79,3 +79,6 @@ Bot-Factory は Cloudflare Worker 専用なので、このPythonのBotは Factor
 - にゃんこ: 受取用PayPayは `/paypay登録`。価格は `games/nyanko/Cogs/Account_vending.py` の `PRICES`。
 - 元の `/実績チャンネル設定`(ぷにぷに)は、ハブ運用では管理画面へ案内するだけの表示になります。
 - 元の `/vending_account` は押した人ではなくコマンド実行者へDMする作りでした。常設パネルは「押した人」宛に作り直しています(`hub/panels.py`)。`/vending` 系は元のままです。
+
+## m-ws で動かすときの注意
+- m-ws はプロキシ系ライブラリ(`aiohttp-socks` / `PySocks` など)をブロックします。`requirements.txt` から外してあり、ぷにぷにの SOCKS プロキシ回し(`proxy.txt`)は無効です(使おうとすると案内エラーを出します)。
