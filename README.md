@@ -40,6 +40,10 @@ MALLOC_ARENA_MAX=2 python main.py
 
 `MALLOC_ARENA_MAX=2` は省メモリ用(400MBクラスのホスト向け)。待機時は約100MB、ジョブ実行中は増えます。
 
+Bot-Factory からは m-ws プロバイダ(`bot-factory.json` の `provider: "mws"`)で起動します。
+環境変数(`TOKEN` / `OWNER_ID` / `XACCOUNT_BOT_URL` / `CHEAT_BRIDGE_SECRET` / `MALLOC_ARENA_MAX=2` など)は m-ws のサイト側で設定します。
+Factory を使わない場合は、常時起動できるマシン/VPSで `python main.py` を動かします。
+
 ### Developer Portal
 - Bot Token を発行(特権インテントは不要。`Intents.default()` で動作)
 - 招待スコープ `bot` + `applications.commands`

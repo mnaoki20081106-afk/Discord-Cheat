@@ -1,0 +1,12 @@
+{
+  "name": "discord-cheat",
+  "runtime": "worker",
+  "provider": "mws",
+  "mws_language": "python",
+  "entrypoint": "main.py",
+  "setup": {
+    "title": "Discord-Cheat",
+    "description": "にゃんこ大戦争 / ツムツム / ぷにぷにの代行を1つのBotで動かします。m-wsで起動します。外部からの接続は受けず、Xaccount-Botへ約10秒ごとに問い合わせに行きます。環境変数はm-wsのサイト側で設定してください: TOKEN / OWNER_ID / XACCOUNT_BOT_URL（Xaccount-BotのURL）/ CHEAT_BRIDGE_SECRET（Xaccount-Botの「Discord-Cheat連携 Secret」と同じ32文字以上の値）。省メモリのホストでは MALLOC_ARENA_MAX=2 も設定します。一覧は .env.example。",
+    "fields": []
+  }
+}
