@@ -40,9 +40,7 @@ MALLOC_ARENA_MAX=2 python main.py
 
 `MALLOC_ARENA_MAX=2` は省メモリ用(400MBクラスのホスト向け)。待機時は約100MB、ジョブ実行中は増えます。
 
-Bot-Factory からは m-ws プロバイダ(`bot-factory.json` の `provider: "mws"`)で起動します。
-環境変数(`TOKEN` / `OWNER_ID` / `XACCOUNT_BOT_URL` / `CHEAT_BRIDGE_SECRET` / `MALLOC_ARENA_MAX=2` など)は m-ws のサイト側で設定します。
-Factory を使わない場合は、常時起動できるマシン/VPSで `python main.py` を動かします。
+Bot-Factory からは VPS プロバイダ(`bot-factory.json` の `provider: "vps"`)で起動します。Oracle Cloud / Agames などのVPSを管理サイトの「VPS」タブに登録しておくと、SSHで `~/factory/discord-cheat` へ配置して systemd で常駐させます。環境変数(`TOKEN` / `OWNER_ID` / `XACCOUNT_BOT_URL` / `CHEAT_BRIDGE_SECRET` など)はFactoryのフォームに入力すると `.env` に書かれます。Factory を使わない場合は、`python main.py` を直接動かします。
 
 ### Developer Portal
 - Bot Token を発行(特権インテントは不要。`Intents.default()` で動作)
@@ -79,6 +77,3 @@ Bot-Factory は Cloudflare Worker 専用なので、このPythonのBotは Factor
 - にゃんこ: 受取用PayPayは `/paypay登録`。価格は `games/nyanko/Cogs/Account_vending.py` の `PRICES`。
 - 元の `/実績チャンネル設定`(ぷにぷに)は、ハブ運用では管理画面へ案内するだけの表示になります。
 - 元の `/vending_account` は押した人ではなくコマンド実行者へDMする作りでした。常設パネルは「押した人」宛に作り直しています(`hub/panels.py`)。`/vending` 系は元のままです。
-
-## m-ws で動かすときの注意
-- m-ws はプロキシ系ライブラリ(`aiohttp-socks` / `PySocks` など)をブロックします。`requirements.txt` から外してあり、ぷにぷにの SOCKS プロキシ回し(`proxy.txt`)は無効です(使おうとすると案内エラーを出します)。

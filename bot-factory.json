@@ -1,12 +1,20 @@
 {
   "name": "discord-cheat",
   "runtime": "worker",
-  "provider": "mws",
-  "mws_language": "python",
+  "provider": "vps",
+  "vps_runtime": "python",
   "entrypoint": "main.py",
+  "vps_swap_mb": 1024,
+  "vps_pip_extra": [
+    "aiohttp-socks",
+    "requests[socks]"
+  ],
+  "vps_env": {
+    "MALLOC_ARENA_MAX": "2"
+  },
   "setup": {
     "title": "Discord-Cheat",
-    "description": "にゃんこ大戦争 / ツムツム / ぷにぷにの代行を1つのBotで動かします。m-wsで起動し、入力した値はm-wsの .env として保存されます。このBotは外部からの接続を受けず、Xaccount-Botへ約10秒ごとに問い合わせに行きます。",
+    "description": "にゃんこ大戦争 / ツムツム / ぷにぷにの代行を1つのBotで動かします。Oracle / Agames などのVPSにSSHでデプロイし、systemdで常駐させます。入力した値はサーバーの .env に書き込まれます。外部からの接続は受けず、Xaccount-Botへ約10秒ごとに問い合わせに行きます。VPSなのでプロキシ用ライブラリ（aiohttp-socks / PySocks）も使えます。VPSは管理サイトの「VPS」タブで先に登録してください。",
     "fields": [
       {
         "key": "TOKEN",
@@ -108,12 +116,10 @@
         }
       ],
       "notes": [
-        "m-wsで起動するため、Interactions Endpoint URLなどのWorker用設定は不要です。",
-        "入力した値はm-wsのBotの .env に書き込まれます。画面にトークンは再表示されません。"
+        "VPSで起動するため、Interactions Endpoint URLなどのWorker用設定は不要です。",
+        "入力した値はサーバーの ~/factory/discord-cheat/.env に書き込まれます（画面にトークンは再表示されません）。",
+        "ぷにぷにの proxy.txt はサーバー側の ~/factory/discord-cheat/games/puni/proxy.txt に置きます（再デプロイでは上書きされません）。"
       ]
     }
-  },
-  "mws_env": {
-    "MALLOC_ARENA_MAX": "2"
   }
 }
